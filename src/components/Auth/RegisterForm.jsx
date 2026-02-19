@@ -109,7 +109,7 @@ const RegisterForm = () => {
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button type="submit" className="w-full border border-black cursor-pointer text-black" disabled={isLoading}>
         {isLoading ? 'Creating account...' : 'Register'}
       </Button>
 

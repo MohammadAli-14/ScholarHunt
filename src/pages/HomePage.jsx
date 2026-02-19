@@ -64,7 +64,7 @@ const HomePage = () => {
                       </Button>
                     </Link>
                     <Link to="/register">
-                      <Button size="lg" className="w-full sm:w-auto bg-black text-emerald-200 hover cursor-pointer">
+                      <Button size="lg" className="w-full sm:w-auto bg-black text-white hover cursor-pointer">
                         Register
                       </Button>
                     </Link>
@@ -133,7 +133,7 @@ const HomePage = () => {
               Join thousands of students who have found their dream scholarships through our platform.
             </p>
             <Link to="/scholarships">
-              <Button size="lg" className="w-full sm:w-auto bg-black text-emerald-200 cursor-pointer">
+              <Button size="lg" className="w-full sm:w-auto bg-black text-white cursor-pointer">
                 Start Searching Now
               </Button>
             </Link>

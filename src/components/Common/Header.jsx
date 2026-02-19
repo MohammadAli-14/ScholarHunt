@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { Button } from '../ui/button'
 import { GraduationCap, Menu, X, LogOut } from 'lucide-react'
@@ -7,6 +7,7 @@ import { useState } from 'react'
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
@@ -24,9 +25,6 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/scholarships" className="text-sm font-medium text-gray-700 hover:text-primary-500">
-            Find Scholarships
-          </Link>
           {isAuthenticated && (
             <>
               <Link to="/saved" className="text-sm font-medium text-gray-600 hover:text-primary-500">
@@ -40,6 +38,11 @@ const Header = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
+          {!location.pathname.startsWith('/scholarship') && (
+            <Link to="/scholarships">
+              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">Find Scholarships</Button>
+            </Link>
+          )}
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Welcome, {user?.name || 'User'}</span>
@@ -48,16 +51,7 @@ const Header = () => {
                 Logout
               </Button>
             </div>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button className="bg-black text-emerald-200">Login</Button>
-              </Link>
-              <Link to="/register">
-                <Button className="bg-black text-emerald-200">Register</Button>
-              </Link>
-            </>
-          )}
+          ) : null}
         </div>
       </div>
 
