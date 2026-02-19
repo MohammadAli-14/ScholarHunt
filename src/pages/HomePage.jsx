@@ -3,6 +3,7 @@ import { Button } from '../components/ui/button'
 import { Header } from '../components/Common'
 import { useAuth } from '../hooks/useAuth'
 import { GraduationCap, Globe, Award, Search, Users, ArrowRight } from 'lucide-react'
+import AnimatedCounter from '../components/Common/AnimatedCounter'
 
 const HomePage = () => {
   const { isAuthenticated } = useAuth()
@@ -42,7 +43,7 @@ const HomePage = () => {
             <div className="mx-auto max-w-3xl text-center">
               <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
                 Find Your Perfect
-                <span className="text-primary-500"> Fully-Funded </span>
+                <span className="text-emerald-500"> Fully-Funded </span>
                 Master's Scholarship
               </h1>
               <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
@@ -50,7 +51,7 @@ const HomePage = () => {
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/scholarships">
-                  <Button size="lg" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 cursor-pointer">
                     Search Scholarships
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -58,12 +59,12 @@ const HomePage = () => {
                 {!isAuthenticated && (
                   <>
                     <Link to="/login">
-                      <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
+                      <Button size="lg" className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 cursor-pointer">
                         Login
                       </Button>
                     </Link>
                     <Link to="/register">
-                      <Button size="lg" className="w-full sm:w-auto bg-green-600 hover:bg-green-700">
+                      <Button size="lg" className="w-full sm:w-auto bg-black text-emerald-200 hover cursor-pointer">
                         Register
                       </Button>
                     </Link>
@@ -76,11 +77,15 @@ const HomePage = () => {
 
         <section className="py-16 bg-gray-50">
           <div className="container-custom mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-3xl font-bold text-primary-500">{stat.value}</div>
-                  <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
+                <div key={stat.label} className="bg-emerald-500 rounded-xl p-6 shadow-gray-300 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                      <AnimatedCounter value={stat.value} />
+                    </div>
+                    <div className="text-sm text-gray-800 font-medium">{stat.label}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -91,10 +96,10 @@ const HomePage = () => {
           <div className="container-custom mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900">
-                Why Choose ScholarHunter?
+                Why Choose <span className="text-emerald-500">ScholarHunter</span>?
               </h2>
               <p className="mt-4 text-gray-600">
-                We help international students find the best scholarship opportunities
+                We help <span className="text-emerald-500">international students</span> find the best <span className="text-emerald-500">scholarship</span> opportunities
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
@@ -103,9 +108,9 @@ const HomePage = () => {
                 return (
                   <div
                     key={feature.title}
-                    className="p-6 rounded-lg border border-gray-200 bg-white hover:shadow-lg transition-shadow"
+                    className="p-6 rounded-lg border border-black bg-white hover:shadow-lg transition-shadow"
                   >
-                    <div className="h-12 w-12 rounded-lg bg-primary-100 flex items-center justify-center mb-4">
+                    <div className="h-12 w-12 rounded-lg bg-emerald-500 flex items-center justify-center mb-4">
                       <Icon className="h-6 w-6 text-primary-500" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -119,16 +124,16 @@ const HomePage = () => {
           </div>
         </section>
 
-        <section className="py-20 bg-primary-500">
+        <section className="py-20 bg-emerald-600">
           <div className="container-custom mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
+            <h2 className="text-3xl font-bold text-black mb-4">
               Ready to Find Your Scholarship?
             </h2>
-            <p className="text-primary-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-black mb-8 max-w-2xl mx-auto">
               Join thousands of students who have found their dream scholarships through our platform.
             </p>
             <Link to="/scholarships">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-black text-emerald-200 cursor-pointer">
                 Start Searching Now
               </Button>
             </Link>
@@ -143,7 +148,7 @@ const HomePage = () => {
               <GraduationCap className="h-6 w-6 text-white" />
               <span className="text-lg font-bold text-white">ScholarHunter</span>
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-200 text-sm">
               2026 ScholarHunter. All rights reserved.
             </p>
           </div>

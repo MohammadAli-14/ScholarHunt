@@ -24,7 +24,7 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/scholarships" className="text-sm font-medium text-gray-600 hover:text-primary-500">
+          <Link to="/scholarships" className="text-sm font-medium text-gray-700 hover:text-primary-500">
             Find Scholarships
           </Link>
           {isAuthenticated && (
@@ -51,33 +51,20 @@ const Header = () => {
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost">Login</Button>
+                <Button className="bg-black text-emerald-200">Login</Button>
               </Link>
               <Link to="/register">
-                <Button>Register</Button>
+                <Button className="bg-black text-emerald-200">Register</Button>
               </Link>
             </>
           )}
         </div>
-
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
       </div>
 
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white">
           <nav className="flex flex-col p-4 gap-4">
-            <Link 
-              to="/scholarships" 
-              className="text-sm font-medium text-gray-600 hover:text-primary-500"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Find Scholarships
-            </Link>
+
             {isAuthenticated ? (
               <>
                 <Link 
@@ -100,13 +87,8 @@ const Header = () => {
                 </Button>
               </>
             ) : (
-              <div className="flex flex-col gap-2">
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">Login</Button>
-                </Link>
-                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button className="w-full">Register</Button>
-                </Link>
+              <div>
+                
               </div>
             )}
           </nav>
