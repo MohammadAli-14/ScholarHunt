@@ -60,12 +60,12 @@ const ManualProfileForm = ({ onComplete }) => {
     
     switch (step) {
       case 1:
-        if (!personalInfo.name.trim()) {
+        if (!personalInfo.name?.trim()) {
           errors.name = 'Name is required'
         } else if (personalInfo.name.trim().length < 2) {
           errors.name = 'Name must be at least 2 characters'
         }
-        if (personalInfo.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(personalInfo.phone.replace(/\D/g, ''))) {
+        if (personalInfo.phone && !/^[\+]?[\d\s-]{10,20}$/.test(personalInfo.phone.replace(/\D/g, ''))) {
           errors.phone = 'Please enter a valid phone number'
         }
         break
@@ -74,19 +74,19 @@ const ManualProfileForm = ({ onComplete }) => {
         if (!education.degree) {
           errors.degree = 'Degree is required'
         }
-        if (!education.university.trim()) {
+        if (!education.university?.trim()) {
           errors.university = 'University is required'
         }
-        if (!education.field.trim()) {
+        if (!education.field?.trim()) {
           errors.field = 'Field of study is required'
         }
-        if (education.gpa) {
+        if (education.gpa !== '' && education.gpa !== undefined && education.gpa !== null) {
           const gpaValue = parseFloat(education.gpa)
           if (isNaN(gpaValue) || gpaValue < 0 || gpaValue > 4) {
             errors.gpa = 'GPA must be between 0 and 4'
           }
         }
-        if (education.graduationYear) {
+        if (education.graduationYear !== '' && education.graduationYear !== undefined && education.graduationYear !== null) {
           const year = parseInt(education.graduationYear)
           const currentYear = new Date().getFullYear()
           if (isNaN(year) || year < 1900 || year > currentYear + 10) {
@@ -115,19 +115,20 @@ const ManualProfileForm = ({ onComplete }) => {
         break
     }
     
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
+    return errors
   }
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
+    const errors = validateStep(currentStep)
+    if (Object.keys(errors).length === 0) {
       if (currentStep < STEPS.length) {
         setCurrentStep(currentStep + 1)
         setValidationErrors({})
       }
     } else {
-      // Show error toast for the first step with errors
-      const firstError = Object.values(validationErrors)[0]
+      setValidationErrors(errors)
+      // Show error toast for the first error
+      const firstError = Object.values(errors)[0]
       if (firstError) {
         addToast({ type: 'error', message: firstError })
       }
@@ -141,9 +142,15 @@ const ManualProfileForm = ({ onComplete }) => {
   }
 
   const addSkill = () => {
-    if (newSkill && newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()])
+    // Handle comma-separated values
+    const skillsToAdd = newSkill.split(',').map(s => s.trim()).filter(s => s && !skills.includes(s))
+    if (skillsToAdd.length > 0) {
+      setSkills([...skills, ...skillsToAdd])
       setNewSkill('')
+      // Clear validation error if we added skills
+      if (validationErrors.skills) {
+        setValidationErrors({ ...validationErrors, skills: '' })
+      }
     }
   }
 
