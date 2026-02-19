@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -51,4 +51,4 @@ const Profile = mongoose.models.Profile || mongoose.model('Profile', profileSche
 const Scholarship = mongoose.models.Scholarship || mongoose.model('Scholarship', scholarshipSchema)
 const SavedScholarship = mongoose.models.SavedScholarship || mongoose.model('SavedScholarship', savedScholarshipSchema)
 
-module.exports = { User, Profile, Scholarship, SavedScholarship }
+export { User, Profile, Scholarship, SavedScholarship }

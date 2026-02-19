@@ -1,9 +1,9 @@
-const { ScraperEngine, Scholars4DevScraper, OpportunityDeskScraper, normalizeScholarship, deduplicateScholarships } = require('../scrapers/index.cjs');
+import { ScraperEngine, Scholars4DevScraper, OpportunityDeskScraper, normalizeScholarship, deduplicateScholarships } from '../scrapers/index.js';
 
 /**
  * Scheduled scraper job - runs periodically to fetch new scholarships
  */
-class ScheduledScraper {
+export class ScheduledScraper {
   constructor(db, intervalHours = 24) {
     this.db = db;
     this.intervalHours = intervalHours;
@@ -109,5 +109,3 @@ class ScheduledScraper {
     };
   }
 }
-
-module.exports = { ScheduledScraper };

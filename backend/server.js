@@ -1,17 +1,27 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '.env') })
-const express = require('express')
-const cors = require('cors')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const { MongoClient } = require('mongodb')
-const path = require('path')
-const multer = require('multer')
-const scholarshipData = require('./data/scholarships.cjs')
-const { seedScholarships } = require('./data/seedScholarships.cjs')
-const { parseResume } = require('./utils/resumeParser.cjs')
-const { ScraperEngine, Scholars4DevScraper, OpportunityDeskScraper, normalizeScholarship, deduplicateScholarships } = require('./scrapers/index.cjs')
-const { ScheduledScraper } = require('./utils/scheduledScraper.cjs')
-const uploadRoutes = require('./routes/upload.cjs')
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
+import express from 'express'
+import cors from 'cors'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { MongoClient, ObjectId } from 'mongodb'
+import multer from 'multer'
+import { v4 as uuidv4 } from 'uuid'
+import scholarshipData from './data/scholarships.js'
+import { seedScholarships } from './data/seedScholarships.js'
+import { parseResume } from './utils/resumeParser.js'
+import { ScraperEngine, Scholars4DevScraper, OpportunityDeskScraper, WorldForumScraper, IEAFScraper, AfterSchoolAfricaScraper, normalizeScholarship, deduplicateScholarships } from './scrapers/index.js'
+import { ScheduledScraper } from './utils/scheduledScraper.js'
+import uploadRoutes from './routes/upload.js'
+import authRoutes from './routes/auth.js'
+import userRoutes from './routes/users.js'
+import scholarshipRoutes from './routes/scholarships.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+dotenv.config({ path: resolve(__dirname, '.env') })
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -228,16 +238,7 @@ app.post('/api/users/upload-resume', authenticate, async (req, res) => {
   try {
     // Check if file was uploaded
     if (!req.body || !req.body.resumeData) {
-      // If no file data, return default
-      return res.json({
-        education: [
-          { degree: 'Bachelor\'s Degree', university: 'University Name', field: 'Computer Science', gpa: 3.5, graduationYear: 2024 }
-        ],
-        experience: [
-          { company: 'Company Name', position: 'Position', duration: '1-2 years', skills: [] }
-        ],
-        skills: ['JavaScript', 'Python', 'SQL', 'Git'],
-      })
+      return res.status(400).json({ message: 'No resume data provided' })
     }
     
     // Decode base64 PDF data
@@ -250,16 +251,7 @@ app.post('/api/users/upload-resume', authenticate, async (req, res) => {
     res.json(extractedData)
   } catch (error) {
     console.error('Resume parsing error:', error)
-    // Return default data on error
-    res.json({
-      education: [
-        { degree: 'Bachelor\'s Degree', university: 'University Name', field: 'Computer Science', gpa: 3.5, graduationYear: 2024 }
-      ],
-      experience: [
-        { company: 'Company Name', position: 'Position', duration: '1-2 years', skills: [] }
-      ],
-      skills: ['JavaScript', 'Python', 'SQL', 'Git'],
-    })
+    res.status(500).json({ message: 'Failed to parse resume', error: error.message })
   }
 })
 

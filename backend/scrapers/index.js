@@ -1,5 +1,5 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+import axios from 'axios'
+import * as cheerio from 'cheerio'
 
 /**
  * Base scraper with shared functionality
@@ -521,10 +521,310 @@ function deduplicateScholarships(scholarships) {
   });
 }
 
-module.exports = {
+/**
+ * World Scholarship Forum scraper - scrapes worldscholarshipforum.com
+ */
+class WorldForumScraper extends BaseScraper {
+  constructor() {
+    super();
+    this.name = 'worldforum';
+    this.baseUrl = 'https://worldscholarshipforum.com';
+    this.retryCount = 3;
+    this.retryDelay = 2000;
+  }
+
+  async scrape() {
+    const scholarships = [];
+    
+    try {
+      const pages = [
+        `${this.baseUrl}/scholarships-for-international-students/`,
+        `${this.baseUrl}/fully-funded-scholarships/`,
+        `${this.baseUrl}/category/scholarships/`
+      ];
+      
+      for (const listUrl of pages) {
+        try {
+          console.log(`WorldForum scraping: ${listUrl}`);
+          const response = await this.fetchWithRetry(listUrl);
+          const $ = cheerio.load(response.data);
+          
+          $('article, .post-item, .scholarship-item, .entry').each((i, element) => {
+            try {
+              const $el = $(element);
+              const title = $el.find('h2 a, h3 a, .entry-title a, .title a').first().text().trim();
+              const link = $el.find('h2 a, h3 a, .entry-title a, .title a').first().attr('href');
+              const excerpt = $el.find('p, .excerpt, .summary').first().text().trim();
+              
+              if (title && link && title.length > 10) {
+                const scholarship = this.parseScholarship(title, excerpt, link);
+                if (scholarship) {
+                  scholarships.push(scholarship);
+                }
+              }
+            } catch (err) {
+              console.warn('Error parsing individual scholarship:', err.message);
+            }
+          });
+          
+          await this.delay(2000);
+        } catch (err) {
+          console.warn(`Failed to scrape ${listUrl}:`, err.message);
+        }
+      }
+
+      console.log(`WorldForum scraper found ${scholarships.length} scholarships`);
+      return scholarships;
+    } catch (error) {
+      console.error('WorldForum scraping failed:', error.message);
+      return scholarships;
+    }
+  }
+
+  async fetchWithRetry(url) {
+    let lastError;
+    for (let i = 0; i < this.retryCount; i++) {
+      try {
+        return await this.fetchWithConfig(url);
+      } catch (err) {
+        lastError = err;
+        if (i < this.retryCount - 1) {
+          await this.delay(this.retryDelay * (i + 1));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  parseScholarship(title, excerpt, link) {
+    const s4dScraper = new Scholars4DevScraper();
+    
+    return {
+      id: `wf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: title.slice(0, 200),
+      university: s4dScraper.extractUniversity(title, excerpt) || 'Various Universities',
+      country: s4dScraper.extractCountry(title, excerpt),
+      fieldOfStudy: s4dScraper.extractFieldOfStudy(title, excerpt),
+      fundingType: s4dScraper.determineFundingType(title, excerpt),
+      amount: s4dScraper.extractAmount(excerpt) || 'Full Funding',
+      deadline: s4dScraper.extractDeadline('', excerpt),
+      applicationFee: 0,
+      ieltsRequired: s4dScraper.hasIELTSRequirement(excerpt),
+      minGPA: 3.0,
+      description: excerpt.slice(0, 500),
+      benefits: s4dScraper.extractBenefits(excerpt),
+      requirements: s4dScraper.extractRequirements(excerpt),
+      applicationLink: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400',
+      source: 'worldforum',
+      sourceUrl: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      lastScraped: new Date(),
+      isActive: true
+    };
+  }
+}
+
+/**
+ * International Education Financial Aid scraper - scrapes iefa.org
+ */
+class IEAFScraper extends BaseScraper {
+  constructor() {
+    super();
+    this.name = 'iefa';
+    this.baseUrl = 'https://www.iefa.org';
+    this.retryCount = 3;
+    this.retryDelay = 2000;
+  }
+
+  async scrape() {
+    const scholarships = [];
+    
+    try {
+      const listUrl = `${this.baseUrl}/scholarships`;
+      console.log(`IEAF scraping: ${listUrl}`);
+      
+      const response = await this.fetchWithRetry(listUrl);
+      const $ = cheerio.load(response.data);
+      
+      $('.scholarship-item, .result-item, article, .listing').each((i, element) => {
+        try {
+          const $el = $(element);
+          const title = $el.find('h2 a, h3 a, .title a, .scholarship-title').first().text().trim();
+          const link = $el.find('h2 a, h3 a, .title a').first().attr('href');
+          const excerpt = $el.find('p, .description, .summary').first().text().trim();
+          
+          if (title && title.length > 10) {
+            const scholarship = this.parseScholarship(title, excerpt, link || listUrl);
+            if (scholarship) {
+              scholarships.push(scholarship);
+            }
+          }
+        } catch (err) {
+          console.warn('Error parsing individual scholarship:', err.message);
+        }
+      });
+
+      console.log(`IEAF scraper found ${scholarships.length} scholarships`);
+      return scholarships;
+    } catch (error) {
+      console.error('IEAF scraping failed:', error.message);
+      return scholarships;
+    }
+  }
+
+  async fetchWithRetry(url) {
+    let lastError;
+    for (let i = 0; i < this.retryCount; i++) {
+      try {
+        return await this.fetchWithConfig(url);
+      } catch (err) {
+        lastError = err;
+        if (i < this.retryCount - 1) {
+          await this.delay(this.retryDelay * (i + 1));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  parseScholarship(title, excerpt, link) {
+    const s4dScraper = new Scholars4DevScraper();
+    
+    return {
+      id: `iefa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: title.slice(0, 200),
+      university: s4dScraper.extractUniversity(title, excerpt) || 'Various Universities',
+      country: s4dScraper.extractCountry(title, excerpt),
+      fieldOfStudy: s4dScraper.extractFieldOfStudy(title, excerpt),
+      fundingType: s4dScraper.determineFundingType(title, excerpt),
+      amount: s4dScraper.extractAmount(excerpt) || 'Full Funding',
+      deadline: s4dScraper.extractDeadline('', excerpt),
+      applicationFee: 0,
+      ieltsRequired: s4dScraper.hasIELTSRequirement(excerpt),
+      minGPA: 3.0,
+      description: excerpt.slice(0, 500),
+      benefits: s4dScraper.extractBenefits(excerpt),
+      requirements: s4dScraper.extractRequirements(excerpt),
+      applicationLink: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      imageUrl: 'https://images.unsplash.com/photo-1562774053-701939374585?w=400',
+      source: 'iefa',
+      sourceUrl: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      lastScraped: new Date(),
+      isActive: true
+    };
+  }
+}
+
+/**
+ * After School Africa scraper - scrapes afterschoolafrica.com
+ */
+class AfterSchoolAfricaScraper extends BaseScraper {
+  constructor() {
+    super();
+    this.name = 'afterschoolafrica';
+    this.baseUrl = 'https://www.afterschoolafrica.com';
+    this.retryCount = 3;
+    this.retryDelay = 2000;
+  }
+
+  async scrape() {
+    const scholarships = [];
+    
+    try {
+      const listUrl = `${this.baseUrl}/scholarships/`;
+      console.log(`AfterSchoolAfrica scraping: ${listUrl}`);
+      
+      const response = await this.fetchWithRetry(listUrl);
+      const $ = cheerio.load(response.data);
+      
+      $('article, .post').each((i, element) => {
+        try {
+          const $el = $(element);
+          const title = $el.find('h2 a, h3 a, .entry-title a').first().text().trim();
+          const link = $el.find('h2 a, h3 a, .entry-title a').first().attr('href');
+          const excerpt = $el.find('.entry-summary, p').first().text().trim();
+          
+          if (title && link && title.length > 10) {
+            const scholarship = this.parseScholarship(title, excerpt, link);
+            if (scholarship) {
+              scholarships.push(scholarship);
+            }
+          }
+        } catch (err) {
+          console.warn('Error parsing individual scholarship:', err.message);
+        }
+      });
+
+      console.log(`AfterSchoolAfrica scraper found ${scholarships.length} scholarships`);
+      return scholarships;
+    } catch (error) {
+      console.error('AfterSchoolAfrica scraping failed:', error.message);
+      return scholarships;
+    }
+  }
+
+  async fetchWithRetry(url) {
+    let lastError;
+    for (let i = 0; i < this.retryCount; i++) {
+      try {
+        return await this.fetchWithConfig(url);
+      } catch (err) {
+        lastError = err;
+        if (i < this.retryCount - 1) {
+          await this.delay(this.retryDelay * (i + 1));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  parseScholarship(title, excerpt, link) {
+    const s4dScraper = new Scholars4DevScraper();
+    
+    return {
+      id: `asa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: title.slice(0, 200),
+      university: s4dScraper.extractUniversity(title, excerpt) || 'Various Universities',
+      country: s4dScraper.extractCountry(title, excerpt),
+      fieldOfStudy: s4dScraper.extractFieldOfStudy(title, excerpt),
+      fundingType: s4dScraper.determineFundingType(title, excerpt),
+      amount: s4dScraper.extractAmount(excerpt) || 'Full Funding',
+      deadline: s4dScraper.extractDeadline('', excerpt),
+      applicationFee: 0,
+      ieltsRequired: s4dScraper.hasIELTSRequirement(excerpt),
+      minGPA: 3.0,
+      description: excerpt.slice(0, 500),
+      benefits: s4dScraper.extractBenefits(excerpt),
+      requirements: s4dScraper.extractRequirements(excerpt),
+      applicationLink: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400',
+      source: 'afterschoolafrica',
+      sourceUrl: link.startsWith('http') ? link : `${this.baseUrl}${link}`,
+      lastScraped: new Date(),
+      isActive: true
+    };
+  }
+}
+
+export {
   ScraperEngine,
   Scholars4DevScraper,
   OpportunityDeskScraper,
+  WorldForumScraper,
+  IEAFScraper,
+  AfterSchoolAfricaScraper,
   normalizeScholarship,
   deduplicateScholarships
-};
+}

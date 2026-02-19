@@ -261,12 +261,17 @@ const ManualProfileForm = ({ onComplete }) => {
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Degree</Label>
+              <Label>Degree *</Label>
               <Select
                 value={education.degree}
-                onValueChange={(value) => setEducation({ ...education, degree: value })}
+                onValueChange={(value) => {
+                  setEducation({ ...education, degree: value })
+                  if (validationErrors.degree) {
+                    setValidationErrors({ ...validationErrors, degree: '' })
+                  }
+                }}
               >
-                <SelectTrigger>
+                <SelectTrigger className={validationErrors.degree ? 'border-red-500' : ''}>
                   <SelectValue placeholder="Select degree" />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,6 +280,9 @@ const ManualProfileForm = ({ onComplete }) => {
                   ))}
                 </SelectContent>
               </Select>
+              {validationErrors.degree && (
+                <p className="text-sm text-red-500">{validationErrors.degree}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>University</Label>
@@ -519,7 +527,7 @@ const ManualProfileForm = ({ onComplete }) => {
             )}
           </Button>
         ) : (
-          <Button onClick={handleNext}>
+          <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
             Next
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>

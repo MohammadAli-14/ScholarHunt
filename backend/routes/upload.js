@@ -1,16 +1,19 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-const { parseResume } = require('../utils/resumeParser.cjs');
+import express from 'express'
+import multer from 'multer'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import fs from 'fs'
+import { v4 as uuidv4 } from 'uuid'
+import { parseResume } from '../utils/resumeParser.js'
+import { authenticateToken } from '../middleware/auth.js'
 
-const router = express.Router();
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-const { authenticateToken } = require('../middleware/auth.cjs');
+const router = express.Router()
 
 // Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -183,4 +186,4 @@ router.post('/manual-resume', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

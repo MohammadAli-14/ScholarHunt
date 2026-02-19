@@ -489,4 +489,5 @@ const seedScholarships = [
   }
 ];
 
-module.exports = { seedScholarships };
+export default seedScholarships;
+export { seedScholarships };

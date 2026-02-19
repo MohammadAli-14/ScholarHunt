@@ -811,4 +811,5 @@ const scholarships = [
   }
 ]
 
-module.exports = scholarships
+export default scholarships
+export { scholarships }

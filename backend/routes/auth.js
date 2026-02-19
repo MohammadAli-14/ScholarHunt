@@ -1,9 +1,9 @@
-const express = require('express')
-const router = express.Router()
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-const SECRET = process.env.JWT_SECRET || 'scholarhunter_secret_key_2024'
+const router = express.Router();
+const SECRET = process.env.JWT_SECRET || 'scholarhunter_secret_key_2024';
 
 router.post('/register', async (req, res) => {
   try {
@@ -99,4 +99,4 @@ router.get('/me', async (req, res) => {
   }
 })
 
-module.exports = router
+export default router

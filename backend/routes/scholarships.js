@@ -1,8 +1,9 @@
-const express = require('express')
+import express from 'express'
+import { Scholarship, Profile } from '../models/index.js'
+import { authenticateToken } from '../middleware/auth.js'
+import { calculateMatchScore } from '../utils/matching.js'
+
 const router = express.Router()
-const { Scholarship, Profile } = require('../models/index.cjs')
-const { authenticateToken } = require('../middleware/auth.cjs')
-const { calculateMatchScore } = require('../utils/matching.cjs')
 
 router.get('/match', authenticateToken, async (req, res) => {
   try {
@@ -171,4 +172,4 @@ router.get('/fields/list', async (req, res) => {
   }
 })
 
-module.exports = router
+export default router

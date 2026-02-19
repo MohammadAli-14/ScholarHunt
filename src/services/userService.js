@@ -27,15 +27,7 @@ export const userService = {
       return response.data
     } catch (error) {
       console.error('Error uploading resume:', error)
-      return {
-        education: [
-          { degree: 'Bachelor of Science', university: 'University Name', field: 'Computer Science', gpa: 3.5, graduationYear: 2024 }
-        ],
-        experience: [
-          { company: 'Tech Company', position: 'Software Engineer', duration: '1 year', skills: ['JavaScript', 'React', 'Node.js'] }
-        ],
-        skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],
-      }
+      throw error
     }
   },
 

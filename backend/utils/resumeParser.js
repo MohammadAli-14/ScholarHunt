@@ -1,11 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
-const OpenAI = require('openai');
+import fs from 'fs'
+import path from 'path'
+import pdfParse from 'pdf-parse'
+import mammoth from 'mammoth'
+import OpenAI from 'openai'
 
 // Initialize OpenAI if key is available
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null
 
 /**
  * Enhanced Resume Parser
@@ -104,8 +104,16 @@ async function parseResume(filePath) {
       throw new Error('Failed to parse DOCX file. The file may be corrupted or in an unsupported format.');
     }
     
-    // Generic error for unexpected issues
-    throw new Error('Failed to process resume. Please try again with a different file.');
+    // Generic error for unexpected issues - return fallback data instead of throwing
+    console.warn('Resume parsing failed, returning fallback data:', error.message);
+    return {
+      text: '',
+      educationLevel: "Bachelor's",
+      fieldOfStudy: ['General'],
+      country: 'International',
+      confidence: 30,
+      _fallback: true
+    };
   }
 }
 
@@ -201,4 +209,4 @@ function extractWithRegex(text) {
   };
 }
 
-module.exports = { parseResume };
+export { parseResume };

@@ -1,7 +1,17 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const { MongoClient } = require('mongodb')
+import dotenv from 'dotenv'
+import express from 'express'
+import cors from 'cors'
+import { MongoClient } from 'mongodb'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { existsSync } from 'fs'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+dotenv.config({ path: join(__dirname, '../../backend/.env') })
+
+console.log('=== ScholarHunter Backend Test Suite ===\n')
 
 const app = express()
 const PORT = process.env.PORT || 5000

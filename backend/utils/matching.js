@@ -1,5 +1,4 @@
-const cosineSimilarity = require('compute-cosine-similarity'); // I'll need to install this or implement it
-// Or just implement a simple Jaccard similarity for now since I don't want to add too many dependencies
+// Simple Jaccard similarity implementation to avoid extra dependencies
 
 function calculateJaccardSimilarity(arr1, arr2) {
   const set1 = new Set(arr1.map(x => x.toLowerCase()));
@@ -110,4 +109,4 @@ function calculateMatchScore(userProfile, scholarship) {
   };
 }
 
-module.exports = { calculateMatchScore };
+export { calculateMatchScore };
