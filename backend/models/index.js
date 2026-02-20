@@ -16,7 +16,8 @@ const profileSchema = new mongoose.Schema({
   targetCountries: [String],
   fieldOfStudy: [String],
   gpa: { type: Number, default: 0 },
-  englishLevel: { type: String, default: 'intermediate' }
+  englishLevel: { type: String, default: 'intermediate' },
+  resumePath: { type: String, default: '' }
 }, { timestamps: true })
 
 const scholarshipSchema = new mongoose.Schema({
@@ -46,9 +47,19 @@ const savedScholarshipSchema = new mongoose.Schema({
   scholarship: Object
 }, { timestamps: true })
 
+const scrapeLogSchema = new mongoose.Schema({
+  timestamp: { type: Date, default: Date.now },
+  totalFound: Number,
+  newAdded: Number,
+  sources: [Object],
+  error: String,
+  status: { type: String, default: 'success' }
+})
+
 const User = mongoose.models.User || mongoose.model('User', userSchema)
 const Profile = mongoose.models.Profile || mongoose.model('Profile', profileSchema)
 const Scholarship = mongoose.models.Scholarship || mongoose.model('Scholarship', scholarshipSchema)
 const SavedScholarship = mongoose.models.SavedScholarship || mongoose.model('SavedScholarship', savedScholarshipSchema)
+const ScrapeLog = mongoose.models.ScrapeLog || mongoose.model('ScrapeLog', scrapeLogSchema)
 
-export { User, Profile, Scholarship, SavedScholarship }
+export { User, Profile, Scholarship, SavedScholarship, ScrapeLog }

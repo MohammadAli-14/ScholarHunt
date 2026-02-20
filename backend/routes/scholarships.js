@@ -85,10 +85,14 @@ router.get('/', async (req, res) => {
       query.applicationFee = 0
     }
     
-    if (gpaMinimum) {
+    const pageNum = parseInt(page) || 1
+    const limitNum = parseInt(limit) || 20
+    const skip = (pageNum - 1) * limitNum
+    
+    if (gpaMinimum && !isNaN(parseFloat(gpaMinimum))) {
       query.minGPA = { $gte: parseFloat(gpaMinimum) }
     }
-    
+
     if (deadline && deadline !== 'all') {
       const today = new Date()
       let futureDate = new Date()
@@ -123,20 +127,18 @@ router.get('/', async (req, res) => {
       sortOption = { deadline: 1 }
     }
     
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    
     const scholarships = await Scholarship.find(query)
       .sort(sortOption)
       .skip(skip)
-      .limit(parseInt(limit))
+      .limit(limitNum)
     
     const total = await Scholarship.countDocuments(query)
     
     res.json({
       scholarships,
       total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / parseInt(limit))
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum)
     })
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch scholarships', error: error.message })

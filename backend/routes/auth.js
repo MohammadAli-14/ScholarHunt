@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { User } from '../models/index.js';
 
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET || 'scholarhunter_secret_key_2024';
@@ -8,28 +9,28 @@ const SECRET = process.env.JWT_SECRET || 'scholarhunter_secret_key_2024';
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name } = req.body
-    const db = req.db
     
-    const existingUser = await db.collection('users').findOne({ email: email.toLowerCase() })
+    const existingUser = await User.findOne({ email: email.toLowerCase() })
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' })
     }
     
     const hashedPassword = await bcrypt.hash(password, 10)
-    const result = await db.collection('users').insertOne({ 
-      email: email.toLowerCase(), 
-      password: hashedPassword, 
-      name, 
-      profileCompleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+    
+    const newUser = new User({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      name,
+      profileCompleted: false
     })
     
-    const token = jwt.sign({ id: result.insertedId, email: email.toLowerCase() }, SECRET, { expiresIn: '7d' })
+    const result = await newUser.save()
+    
+    const token = jwt.sign({ id: result._id, email: result.email }, SECRET, { expiresIn: '7d' })
     
     res.status(201).json({
       message: 'Registration successful',
-      user: { id: result.insertedId, email: email.toLowerCase(), name, profileCompleted: false },
+      user: { id: result._id, email: result.email, name: result.name, profileCompleted: result.profileCompleted },
       token
     })
   } catch (error) {
@@ -41,9 +42,8 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
-    const db = req.db
     
-    const user = await db.collection('users').findOne({ email: email.toLowerCase() })
+    const user = await User.findOne({ email: email.toLowerCase() })
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' })
     }
@@ -81,8 +81,7 @@ router.get('/me', async (req, res) => {
     }
     
     const decoded = jwt.verify(token, SECRET)
-    const db = req.db
-    const user = await db.collection('users').findOne({ _id: decoded.id })
+    const user = await User.findById(decoded.id)
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' })

@@ -2,11 +2,12 @@ import express from 'express'
 import multer from 'multer'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import path from 'path'
 import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { parseResume } from '../utils/resumeParser.js'
 import { authenticateToken } from '../middleware/auth.js'
-import { Profile } from '../models/index.js'
+import { Profile, User } from '../models/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -59,11 +60,41 @@ router.post('/resume', authenticateToken, upload.single('resume'), async (req, r
     // Parse the resume
     const parsedData = await parseResume(req.file.path);
 
-    // TODO: Update user profile in database
-    // For now, we return the parsed data so the frontend can display it for confirmation
+    // Prepare profile update data
+    const profileData = {
+      resumePath: req.file.path,
+      fieldOfStudy: parsedData.fieldOfStudy || [],
+      targetCountries: parsedData.country ? [parsedData.country] : [],
+      skills: parsedData.skills || [],
+      experience: parsedData.experience || [],
+      updatedAt: new Date()
+    };
     
-    // In a real app, we might want to store the file path in the user's profile
-    // db.collection('users').updateOne({ _id: req.user.id }, { $set: { resumePath: req.file.path, ...parsedData } })
+    // Map parsed education level to education array if possible
+    if (parsedData.educationLevel && parsedData.educationLevel !== "Bachelor's") {
+        // Only add if we have something specific, otherwise keep it clean or let user fill it
+        // For now, we'll leave education array management to manual entry or refinement
+    }
+
+    // Update or create profile
+    await Profile.findOneAndUpdate(
+      { userId: req.user.id },
+      { 
+        $set: profileData,
+        $setOnInsert: { 
+            education: [], 
+            experience: [], 
+            skills: [] 
+        } 
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    
+    // Mark profile as partially completed (or fully if we trust the parser)
+    // For now, just track that they have a resume
+    await User.findByIdAndUpdate(req.user.id, { 
+        $set: { updatedAt: new Date() } 
+    });
 
     res.json({
       message: 'Resume uploaded and parsed successfully',
@@ -73,6 +104,8 @@ router.post('/resume', authenticateToken, upload.single('resume'), async (req, r
         educationLevel: parsedData.educationLevel,
         fieldOfStudy: parsedData.fieldOfStudy,
         country: parsedData.country,
+        skills: parsedData.skills,
+        experience: parsedData.experience,
         confidence: parsedData.confidence,
         preview: parsedData.text.slice(0, 500) + '...'
       }
@@ -157,7 +190,6 @@ router.post('/manual-resume', authenticateToken, async (req, res) => {
 
     // SAVE TO DATABASE: Update or create user profile
     const profileData = {
-      userId: req.user.id,
       education: sanitizedData.education.map(edu => ({
         degree: edu.degree,
         field: edu.field,
@@ -171,19 +203,17 @@ router.post('/manual-resume', authenticateToken, async (req, res) => {
       updatedAt: new Date()
     };
 
-    // Find and update existing profile or create new one
-    const existingProfile = await Profile.findOne({ userId: req.user.id });
+    // Find and update existing profile or create new one using Mongoose upsert
+    await Profile.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: profileData },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
     
-    if (existingProfile) {
-      await Profile.updateOne(
-        { userId: req.user.id },
-        { $set: profileData }
-      );
-      console.log('Profile updated for user:', req.user.id);
-    } else {
-      await Profile.create(profileData);
-      console.log('Profile created for user:', req.user.id);
-    }
+    // Update user profile completion status
+    await User.findByIdAndUpdate(req.user.id, {
+      $set: { profileCompleted: true, updatedAt: new Date() }
+    });
     
     res.json({
       message: 'Manual resume data processed and saved successfully',

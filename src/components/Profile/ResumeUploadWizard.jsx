@@ -38,9 +38,8 @@ const ResumeUploadWizard = ({ onComplete }) => {
         fieldOfStudy: data.fieldOfStudy,
         targetCountries: data.country ? [data.country] : [],
         confidence: data.confidence,
-        // Mock other fields for now as parser only returns these
-        skills: [],
-        experience: [],
+        skills: data.skills || [],
+        experience: data.experience || [],
         education: [{
           degree: data.educationLevel,
           field: data.fieldOfStudy[0] || '',

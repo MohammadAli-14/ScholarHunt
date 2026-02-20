@@ -11,26 +11,6 @@ export const userService = {
     }
   },
 
-  async uploadResume(file) {
-    try {
-      // Convert file to base64
-      const base64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsDataURL(file)
-      })
-      
-      const response = await apiClient.post('/users/upload-resume', {
-        resumeData: base64Data
-      })
-      return response.data
-    } catch (error) {
-      console.error('Error uploading resume:', error)
-      throw error
-    }
-  },
-
   async getProfile() {
     try {
       const response = await apiClient.get('/users/profile')

@@ -218,18 +218,68 @@ function extractWithRegex(text) {
     }
   }
 
+  // 4. Skills extraction
+  const commonSkills = [
+    'javascript', 'python', 'java', 'c++', 'react', 'node.js', 'angular', 'vue', 
+    'html', 'css', 'sql', 'nosql', 'mongodb', 'aws', 'docker', 'kubernetes',
+    'git', 'agile', 'scrum', 'communication', 'leadership', 'problem solving',
+    'project management', 'data analysis', 'machine learning', 'ai', 'devops'
+  ];
+  
+  const skills = [];
+  commonSkills.forEach(skill => {
+    if (textLower.includes(skill)) {
+      skills.push(skill.charAt(0).toUpperCase() + skill.slice(1));
+    }
+  });
+
+  // 5. Experience (Basic Heuristic)
+  // Look for lines with years like "2018 - 2020" or "Present"
+  const experience = [];
+  const experienceRegex = /(\d{4})\s*[-–]\s*(present|\d{4})/gi;
+  const lines = text.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (experienceRegex.test(lines[i])) {
+      // Assume this line or previous line has company/role
+      // This is very rough but better than nothing
+      let company = "Unknown Company";
+      let position = "Unknown Position";
+      
+      // Try to find text in the same line or adjacent lines
+      const cleanLine = lines[i].replace(experienceRegex, '').trim();
+      if (cleanLine.length > 3) {
+         company = cleanLine;
+      } else if (i > 0 && lines[i-1].trim().length > 3) {
+         company = lines[i-1].trim();
+      }
+      
+      experience.push({
+        company: company.substring(0, 50),
+        position: position,
+        duration: lines[i].match(experienceRegex)[0],
+        description: "Extracted from resume"
+      });
+      
+      if (experience.length >= 3) break; // Limit to 3 entries
+    }
+  }
+
   // Calculate confidence
   let confidence = 50;
   if (educationLevel !== "Bachelor's") confidence += 10;
   if (fields.length > 0) confidence += 20;
   if (country !== 'International') confidence += 10;
+  if (skills.length > 0) confidence += 10;
 
   return {
     educationLevel,
     fieldOfStudy: fields.length > 0 ? fields.slice(0, 2) : ['General'],
     country,
+    skills,
+    experience,
     confidence
   };
 }
 
-export { parseResume };
+export { parseResume, extractWithRegex };

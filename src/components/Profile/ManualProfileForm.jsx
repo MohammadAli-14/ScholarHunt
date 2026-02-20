@@ -433,7 +433,7 @@ const ManualProfileForm = ({ onComplete }) => {
             <div>
               <Label className="mb-2 block">Fields of Study *</Label>
               <div className="flex flex-wrap gap-2">
-                {FIELDS_OF_STUDY.slice(0, 8).map((field) => (
+                {FIELDS_OF_STUDY.map((field) => (
                   <Button
                     key={field}
                     variant={preferences.fieldOfStudy.includes(field) ? "selected" : "outline"}

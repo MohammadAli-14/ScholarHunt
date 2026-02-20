@@ -1,11 +1,11 @@
 import { ScraperEngine, Scholars4DevScraper, OpportunityDeskScraper, normalizeScholarship, deduplicateScholarships } from '../scrapers/index.js';
+import { Scholarship, ScrapeLog } from '../models/index.js';
 
 /**
  * Scheduled scraper job - runs periodically to fetch new scholarships
  */
 export class ScheduledScraper {
-  constructor(db, intervalHours = 24) {
-    this.db = db;
+  constructor(intervalHours = 24) {
     this.intervalHours = intervalHours;
     this.isRunning = false;
     this.lastRun = null;
@@ -63,21 +63,21 @@ export class ScheduledScraper {
       const unique = deduplicateScholarships(normalized);
 
       // Get existing IDs to avoid overwriting
-      const existingIds = await this.db.collection('scholarships').distinct('id');
+      const existingIds = await Scholarship.distinct('id');
       const existingSet = new Set(existingIds);
 
       // Filter out existing ones and add new ones
       const newScholarships = unique.filter(s => !existingSet.has(s.id));
 
       if (newScholarships.length > 0) {
-        await this.db.collection('scholarships').insertMany(newScholarships);
+        await Scholarship.insertMany(newScholarships);
         console.log(`Added ${newScholarships.length} new scholarships to database`);
       } else {
         console.log('No new scholarships found');
       }
 
       // Update scrape log
-      await this.db.collection('scrape_logs').insertOne({
+      await ScrapeLog.create({
         timestamp: new Date(),
         totalFound: allScholarships.length,
         newAdded: newScholarships.length,
@@ -91,7 +91,7 @@ export class ScheduledScraper {
       console.error('Scheduled scrape failed:', error);
       
       // Log the error
-      await this.db.collection('scrape_logs').insertOne({
+      await ScrapeLog.create({
         timestamp: new Date(),
         error: error.message,
         status: 'failed'

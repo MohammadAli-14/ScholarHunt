@@ -1,5 +1,6 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
+import { User, Profile, SavedScholarship } from '../models/index.js'
 
 const router = express.Router()
 const SECRET = process.env.JWT_SECRET || 'scholarhunter_secret_key_2024'
@@ -24,10 +25,7 @@ const authenticateToken = (req, res, next) => {
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id
-    const db = req.db
     const { education, experience, skills, targetCountries, fieldOfStudy, gpa, englishLevel, name, phone } = req.body
-    
-    let profile = await db.collection('profiles').findOne({ userId: userId })
     
     const profileData = {
       userId: userId,
@@ -41,15 +39,15 @@ router.put('/profile', authenticateToken, async (req, res) => {
       updatedAt: new Date()
     }
     
-    if (profile) {
-      await db.collection('profiles').updateOne({ userId }, { $set: profileData })
-    } else {
-      profileData.createdAt = new Date()
-      await db.collection('profiles').insertOne(profileData)
-    }
+    // Upsert profile
+    await Profile.findOneAndUpdate(
+      { userId },
+      { $set: profileData },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    )
     
-    await db.collection('users').updateOne(
-      { _id: userId },
+    await User.findByIdAndUpdate(
+      userId,
       { $set: { profileCompleted: true, name, phone, updatedAt: new Date() } }
     )
     
@@ -62,10 +60,9 @@ router.put('/profile', authenticateToken, async (req, res) => {
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id
-    const db = req.db
     
-    const user = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } })
-    const profile = await db.collection('profiles').findOne({ userId })
+    const user = await User.findById(userId).select('-password')
+    const profile = await Profile.findOne({ userId })
     
     res.json({ user, profile: profile || {} })
   } catch (error) {
@@ -76,8 +73,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 router.get('/saved-scholarships', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id
-    const db = req.db
-    const saved = await db.collection('saved_scholarships').find({ userId }).sort({ savedAt: -1 }).toArray()
+    const saved = await SavedScholarship.find({ userId }).sort({ savedAt: -1 })
     res.json(saved)
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch saved scholarships', error: error.message })
@@ -87,23 +83,22 @@ router.get('/saved-scholarships', authenticateToken, async (req, res) => {
 router.post('/saved-scholarships', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id
-    const db = req.db
     const { scholarshipId, scholarship } = req.body
     
-    const existing = await db.collection('saved_scholarships').findOne({ userId, scholarshipId })
+    const existing = await SavedScholarship.findOne({ userId, scholarshipId })
     if (existing) {
       return res.status(400).json({ message: 'Scholarship already saved' })
     }
     
-    const saved = {
+    const saved = new SavedScholarship({
       userId,
       scholarshipId,
       scholarship,
       status: 'saved',
       savedAt: new Date()
-    }
+    })
     
-    await db.collection('saved_scholarships').insertOne(saved)
+    await saved.save()
     
     res.status(201).json({ message: 'Scholarship saved successfully', saved })
   } catch (error) {
@@ -115,9 +110,8 @@ router.delete('/saved-scholarships/:scholarshipId', authenticateToken, async (re
   try {
     const userId = req.user.id
     const scholarshipId = req.params.scholarshipId
-    const db = req.db
     
-    await db.collection('saved_scholarships').deleteOne({ userId, scholarshipId })
+    await SavedScholarship.deleteOne({ userId, scholarshipId })
     
     res.json({ message: 'Scholarship removed from saved' })
   } catch (error) {
@@ -130,12 +124,11 @@ router.put('/saved-scholarships/:scholarshipId', authenticateToken, async (req, 
     const userId = req.user.id
     const scholarshipId = req.params.scholarshipId
     const { status } = req.body
-    const db = req.db
     
-    const result = await db.collection('saved_scholarships').findOneAndUpdate(
+    const result = await SavedScholarship.findOneAndUpdate(
       { userId, scholarshipId },
       { $set: { status } },
-      { returnDocument: 'after' }
+      { new: true }
     )
     
     if (!result) {
@@ -151,14 +144,13 @@ router.put('/saved-scholarships/:scholarshipId', authenticateToken, async (req, 
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id
-    const db = req.db
     
-    const savedCount = await db.collection('saved_scholarships').countDocuments({ userId })
-    const appliedCount = await db.collection('saved_scholarships').countDocuments({ userId, status: 'applied' })
-    const acceptedCount = await db.collection('saved_scholarships').countDocuments({ userId, status: 'accepted' })
-    const rejectedCount = await db.collection('saved_scholarships').countDocuments({ userId, status: 'rejected' })
+    const savedCount = await SavedScholarship.countDocuments({ userId })
+    const appliedCount = await SavedScholarship.countDocuments({ userId, status: 'applied' })
+    const acceptedCount = await SavedScholarship.countDocuments({ userId, status: 'accepted' })
+    const rejectedCount = await SavedScholarship.countDocuments({ userId, status: 'rejected' })
     
-    const profile = await db.collection('profiles').findOne({ userId })
+    const profile = await Profile.findOne({ userId })
     const profileCompleted = profile && profile.fieldOfStudy && profile.fieldOfStudy.length > 0
     
     res.json({
