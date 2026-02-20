@@ -40,14 +40,14 @@ const Header = () => {
         <div className="hidden md:flex items-center gap-4">
           {!location.pathname.startsWith('/scholarship') && (
             <Link to="/scholarships">
-              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">Find Scholarships</Button>
+              <Button className="bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer">Find Scholarships</Button>
             </Link>
           )}
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Welcome, {user?.name || 'User'}</span>
               <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
+                <LogOut className="h-4 w-4 mr-2 hover:cursor-pointer" />
                 Logout
               </Button>
             </div>
@@ -76,7 +76,7 @@ const Header = () => {
                   Dashboard
                 </Link>
                 <Button variant="outline" onClick={handleLogout} className="w-full">
-                  <LogOut className="h-4 w-4 mr-2" />
+                  <LogOut className="h-4 w-4 mr-2 hover:cursor-pointer" />
                   Logout
                 </Button>
               </>

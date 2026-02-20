@@ -45,19 +45,19 @@ const Dashboard = () => {
             <CardContent>
               <div className="grid gap-4">
                 <Link to="/scholarships">
-                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2 hover:bg-gray-50 cursor-pointer">
                     <span className="text-lg">🔍</span>
                     <span>Search Scholarships</span>
                   </Button>
                 </Link>
                 <Link to="/profile-setup">
-                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2 hover:bg-gray-50 cursor-pointer">
                     <span className="text-lg">📝</span>
                     <span>Update Profile</span>
                   </Button>
                 </Link>
                 <Link to="/saved">
-                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                  <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2 hover:bg-gray-50 cursor-pointer">
                     <span className="text-lg">🔖</span>
                     <span>Saved List</span>
                   </Button>
