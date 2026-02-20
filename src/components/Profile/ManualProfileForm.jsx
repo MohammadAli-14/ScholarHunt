@@ -520,7 +520,9 @@ const ManualProfileForm = ({ onComplete }) => {
           Back
         </Button>
         {currentStep === STEPS.length ? (
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+          variant="outline"
+          onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin bg-white text-black" />
@@ -528,8 +530,7 @@ const ManualProfileForm = ({ onComplete }) => {
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2 text-black bg-emerald-500 rounded-full p-1" />
-                Complete Profile
+                <Save className="h-6 w-7 mr-2 text-black bg-emerald-500 rounded border border-black p-1" /><span className='text-black'>Save</span>
               </>
             )}
           </Button>

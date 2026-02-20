@@ -33,6 +33,7 @@ const QuickStats = () => {
       icon: GraduationCap,
       color: 'text-primary-500',
       bgColor: 'bg-primary-50',
+      hover: true,
     },
     {
       title: 'Applied',
@@ -40,6 +41,7 @@ const QuickStats = () => {
       icon: Calendar,
       color: 'text-amber-500',
       bgColor: 'bg-amber-50',
+      hover: true,
     },
     {
       title: 'Success Rate',
@@ -47,6 +49,7 @@ const QuickStats = () => {
       icon: TrendingUp,
       color: 'text-green-500',
       bgColor: 'bg-green-50',
+      hover: true,
     },
     {
       title: 'Profile Complete',
@@ -54,6 +57,7 @@ const QuickStats = () => {
       icon: User,
       color: 'text-blue-500',
       bgColor: 'bg-blue-50',
+      hover: true,
     },
   ]
 
@@ -80,7 +84,7 @@ const QuickStats = () => {
       {statItems.map((stat) => {
         const Icon = stat.icon
         return (
-          <Card key={stat.title}>
+          <Card key={stat.title} className={stat.hover ? 'hover:cursor-pointer' : ''}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className={`p-3 rounded-lg ${stat.bgColor}`}>
