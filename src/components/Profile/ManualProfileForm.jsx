@@ -409,7 +409,7 @@ const ManualProfileForm = ({ onComplete }) => {
             <div>
               <Label className="mb-2 block">Target Countries *</Label>
               <div className="flex flex-wrap gap-2">
-                {COUNTRIES.slice(0, 10).map((country) => (
+                {COUNTRIES.map((country) => (
                   <Button
                     key={country}
                     variant={preferences.targetCountries.includes(country) ? "selected" : "outline"}

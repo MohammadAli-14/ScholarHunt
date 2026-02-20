@@ -33,6 +33,27 @@ const ResumeUploadWizard = ({ onComplete }) => {
       
       // Transform response to match expected format
       const data = response.data.parsedData
+      
+      let educationData = [];
+      if (data.education && Array.isArray(data.education) && data.education.length > 0) {
+        educationData = data.education.map(edu => ({
+          degree: edu.degree || '',
+          university: edu.institution || edu.university || '',
+          field: edu.field || '',
+          graduationYear: edu.graduationYear || '',
+          gpa: edu.gpa || ''
+        }));
+      } else {
+        // Fallback if detailed education parsing failed
+        educationData = [{
+          degree: data.educationLevel || '',
+          university: '',
+          field: data.fieldOfStudy[0] || '',
+          graduationYear: new Date().getFullYear(),
+          gpa: ''
+        }];
+      }
+
       setExtractedData({
         educationLevel: data.educationLevel,
         fieldOfStudy: data.fieldOfStudy,
@@ -40,12 +61,7 @@ const ResumeUploadWizard = ({ onComplete }) => {
         confidence: data.confidence,
         skills: data.skills || [],
         experience: data.experience || [],
-        education: [{
-          degree: data.educationLevel,
-          field: data.fieldOfStudy[0] || '',
-          school: '',
-          graduationYear: new Date().getFullYear()
-        }]
+        education: educationData
       })
       
       addToast({ type: 'success', message: 'Resume processed! You can edit the extracted info below.' })

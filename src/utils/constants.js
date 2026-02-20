@@ -19,6 +19,10 @@ export const COUNTRIES = [
   'Belgium',
   'Italy',
   'Spain',
+  'India',
+  'Nigeria',
+  'Pakistan',
+  'China',
 ]
 
 export const FIELDS_OF_STUDY = [

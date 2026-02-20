@@ -54,3 +54,27 @@ test('Resume Parser - Experience Extraction', (t) => {
     assert.strictEqual(result.experience[0].duration, '2018 - 2020');
     assert.strictEqual(result.experience[1].duration, '2020 - Present');
 });
+
+test('Resume Parser - Country Extraction', (t) => {
+    const text = `
+    John Smith
+    123 Main St, New York, NY
+    United States
+    `;
+    const result = extractWithRegex(text);
+    assert.strictEqual(result.country, 'USA', 'Should extract USA');
+
+    const text2 = `
+    Priya Sharma
+    Bangalore, India
+    `;
+    const result2 = extractWithRegex(text2);
+    assert.strictEqual(result2.country, 'India', 'Should extract India');
+    
+    const text3 = `
+    Hans Mueller
+    Munich, Germany
+    `;
+    const result3 = extractWithRegex(text3);
+    assert.strictEqual(result3.country, 'Germany', 'Should extract Germany');
+});

@@ -67,13 +67,21 @@ router.post('/resume', authenticateToken, upload.single('resume'), async (req, r
       targetCountries: parsedData.country ? [parsedData.country] : [],
       skills: parsedData.skills || [],
       experience: parsedData.experience || [],
+      education: parsedData.education || [], // Added education
       updatedAt: new Date()
     };
     
-    // Map parsed education level to education array if possible
-    if (parsedData.educationLevel && parsedData.educationLevel !== "Bachelor's") {
-        // Only add if we have something specific, otherwise keep it clean or let user fill it
-        // For now, we'll leave education array management to manual entry or refinement
+    // Attempt to extract a top-level GPA if found in education history
+    if (parsedData.education && parsedData.education.length > 0) {
+        // Find the first education entry with a GPA
+        const eduWithGpa = parsedData.education.find(e => e.gpa);
+        if (eduWithGpa) {
+            // Clean up GPA string to number (e.g. "3.5/4.0" -> 3.5)
+            const gpaMatch = eduWithGpa.gpa.toString().match(/(\d+(\.\d+)?)/);
+            if (gpaMatch) {
+                profileData.gpa = parseFloat(gpaMatch[0]);
+            }
+        }
     }
 
     // Update or create profile
@@ -82,9 +90,7 @@ router.post('/resume', authenticateToken, upload.single('resume'), async (req, r
       { 
         $set: profileData,
         $setOnInsert: { 
-            education: [], 
-            experience: [], 
-            skills: [] 
+            // Removed conflicting fields that are already in $set
         } 
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -101,6 +107,7 @@ router.post('/resume', authenticateToken, upload.single('resume'), async (req, r
       filePath: req.file.path,
       fileName: req.file.filename,
       parsedData: {
+        education: parsedData.education || [], // Added education
         educationLevel: parsedData.educationLevel,
         fieldOfStudy: parsedData.fieldOfStudy,
         country: parsedData.country,
