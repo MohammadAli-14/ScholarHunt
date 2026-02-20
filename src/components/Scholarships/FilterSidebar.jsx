@@ -137,57 +137,7 @@ const FilterSidebar = () => {
         </RadioGroup>
       </FilterSection>
 
-      <FilterSection title="Countries">
-        <div className="space-y-2">
-          {displayedCountries.map((country) => (
-            <div key={country} className="flex items-center space-x-2">
-              <Checkbox
-                id={country}
-                checked={filters.selectedCountries.includes(country)}
-                onCheckedChange={() => toggleCountryFilter(country)}
-              />
-              <Label htmlFor={country} className="text-sm cursor-pointer">
-                {country}
-              </Label>
-            </div>
-          ))}
-          {COUNTRIES.length > 8 && (
-            <button
-              onClick={() => setShowMoreCountries(!showMoreCountries)}
-              className="text-sm text-primary-500 hover:underline"
-            >
-              {showMoreCountries ? 'Show Less' : 'Show More'}
-            </button>
-          )}
-        </div>
-      </FilterSection>
-
-      <FilterSection title="Fields of Study">
-        <div className="space-y-2">
-          {displayedFields.map((field) => (
-            <div key={field} className="flex items-center space-x-2">
-              <Checkbox
-                id={field}
-                checked={filters.selectedFields.includes(field)}
-                onCheckedChange={() => toggleFieldFilter(field)}
-              />
-              <Label htmlFor={field} className="text-sm cursor-pointer">
-                {field}
-              </Label>
-            </div>
-          ))}
-          {FIELDS_OF_STUDY.length > 6 && (
-            <button
-              onClick={() => setShowMoreFields(!showMoreFields)}
-              className="text-sm text-primary-500 hover:underline"
-            >
-              {showMoreFields ? 'Show Less' : 'Show More'}
-            </button>
-          )}
-        </div>
-      </FilterSection>
-
-      <Button onClick={handleApplyFilters} className="w-full mt-4">
+      <Button onClick={handleApplyFilters} className="w-full mt-4 bg-black text-white">
         Apply Filters
       </Button>
     </div>

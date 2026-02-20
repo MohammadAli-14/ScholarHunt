@@ -412,7 +412,7 @@ const ManualProfileForm = ({ onComplete }) => {
                 {COUNTRIES.slice(0, 10).map((country) => (
                   <Button
                     key={country}
-                    variant={preferences.targetCountries.includes(country) ? "default" : "outline"}
+                    variant={preferences.targetCountries.includes(country) ? "selected" : "outline"}
                     size="sm"
                     type="button"
                     onClick={() => {
@@ -436,7 +436,7 @@ const ManualProfileForm = ({ onComplete }) => {
                 {FIELDS_OF_STUDY.slice(0, 8).map((field) => (
                   <Button
                     key={field}
-                    variant={preferences.fieldOfStudy.includes(field) ? "default" : "outline"}
+                    variant={preferences.fieldOfStudy.includes(field) ? "selected" : "outline"}
                     size="sm"
                     type="button"
                     onClick={() => {
@@ -516,25 +516,25 @@ const ManualProfileForm = ({ onComplete }) => {
           onClick={handleBack}
           disabled={currentStep === 1}
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
+          <ChevronLeft className="h-4 w-4 mr-2 cursor-pointer text-white bg-black " />
           Back
         </Button>
         {currentStep === STEPS.length ? (
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 mr-2 animate-spin bg-white text-black" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <Save className="h-4 w-4 mr-2 text-black bg-emerald-500 rounded-full p-1" />
                 Complete Profile
               </>
             )}
           </Button>
         ) : (
-          <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+          <Button onClick={handleNext} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-md">
             Next
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
