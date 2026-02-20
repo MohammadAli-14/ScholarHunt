@@ -6,6 +6,7 @@ import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 import { parseResume } from '../utils/resumeParser.js'
 import { authenticateToken } from '../middleware/auth.js'
+import { Profile } from '../models/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -154,11 +155,38 @@ router.post('/manual-resume', authenticateToken, async (req, res) => {
     if (education.length > 1) confidence += 15;
     confidence = Math.min(confidence, 100);
 
-    // TODO: Update user profile in database with manual entry data
-    // For now, return the processed data
+    // SAVE TO DATABASE: Update or create user profile
+    const profileData = {
+      userId: req.user.id,
+      education: sanitizedData.education.map(edu => ({
+        degree: edu.degree,
+        field: edu.field,
+        school: edu.school,
+        graduationYear: edu.graduationYear
+      })),
+      fieldOfStudy: sanitizedData.fieldOfStudy,
+      targetCountries: [sanitizedData.country], // Map single country to array
+      skills: sanitizedData.skills,
+      experience: sanitizedData.experience,
+      updatedAt: new Date()
+    };
+
+    // Find and update existing profile or create new one
+    const existingProfile = await Profile.findOne({ userId: req.user.id });
+    
+    if (existingProfile) {
+      await Profile.updateOne(
+        { userId: req.user.id },
+        { $set: profileData }
+      );
+      console.log('Profile updated for user:', req.user.id);
+    } else {
+      await Profile.create(profileData);
+      console.log('Profile created for user:', req.user.id);
+    }
     
     res.json({
-      message: 'Manual resume data processed successfully',
+      message: 'Manual resume data processed and saved successfully',
       parsedData: {
         educationLevel: sanitizedData.educationLevel,
         fieldOfStudy: sanitizedData.fieldOfStudy,

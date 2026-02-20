@@ -14,23 +14,36 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPE
  * - Falls back to regex-based extraction
  * - Provides confidence scores
  */
-async function parseResume(filePath) {
+async function parseResume(input) {
   try {
-    // Validate file exists
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`File not found: ${filePath}`);
+    // Check if input is a Buffer or file path
+    const isBuffer = Buffer.isBuffer(input);
+    let fileExt = '.pdf';
+    let dataBuffer;
+    
+    if (isBuffer) {
+      // Input is a Buffer (from base64 decode)
+      dataBuffer = input;
+      // Assume PDF for buffer input (from /api/users/upload-resume endpoint)
+      fileExt = '.pdf';
+    } else {
+      // Input is a file path (from multer upload)
+      const filePath = input;
+      // Validate file exists
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
+      }
+      fileExt = path.extname(filePath).toLowerCase();
+      dataBuffer = fs.readFileSync(filePath);
     }
 
-    const fileExt = path.extname(filePath).toLowerCase();
     let text = '';
 
     // Step 1: Extract text based on file type
     if (fileExt === '.pdf') {
       try {
-        const dataBuffer = fs.readFileSync(filePath);
-        // Use pdf-parse correctly by creating a PDFParse instance with Uint8Array
-        const parser = new pdfParse.PDFParse({ data: new Uint8Array(dataBuffer) });
-        const data = await parser.getText();
+        // Use pdf-parse correctly - it's a function, not a class
+        const data = await pdfParse(dataBuffer);
         text = data.text;
         
         if (!text || text.trim().length === 0) {
@@ -41,7 +54,17 @@ async function parseResume(filePath) {
       }
     } else if (fileExt === '.docx' || fileExt === '.doc') {
       try {
-        const result = await mammoth.extractRawText({ path: filePath });
+        // For DOCX, we need to write buffer to temp file or use the original path
+        let result;
+        if (isBuffer) {
+          // Write buffer to temp file for mammoth
+          const tempPath = `/tmp/temp-${Date.now()}.docx`;
+          fs.writeFileSync(tempPath, dataBuffer);
+          result = await mammoth.extractRawText({ path: tempPath });
+          fs.unlinkSync(tempPath);
+        } else {
+          result = await mammoth.extractRawText({ path: input });
+        }
         text = result.value;
         
         if (!text || text.trim().length === 0) {
