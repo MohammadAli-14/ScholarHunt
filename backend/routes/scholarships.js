@@ -24,7 +24,10 @@ router.get('/match', authenticateToken, async (req, res) => {
     const userProfile = {
       educationLevel: educationLevel,
       fieldOfStudy: profile.fieldOfStudy || [],
-      country: profile.targetCountries && profile.targetCountries.length > 0 ? profile.targetCountries[0] : 'International'
+      country: profile.targetCountries && profile.targetCountries.length > 0 ? profile.targetCountries[0] : 'International',
+      targetCountries: profile.targetCountries || [],
+      skills: profile.skills || [],
+      gpa: profile.education && profile.education.length > 0 ? profile.education[0].gpa : null
     };
 
     const scholarships = await Scholarship.find({});
