@@ -1,3 +1,4 @@
+//Testing of resume parser succesful with Geimini model
 import { extractWithRegex } from '../utils/resumeParser.js';
 import assert from 'assert';
 import { test } from 'node:test';
